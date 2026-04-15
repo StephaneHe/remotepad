@@ -1,0 +1,59 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ---- PyInstaller ----
+build/
+dist/
+*.spec.bak
+
+# ---- Logs & temp ----
+*.log
+remotepad.log
+_logcat.txt
+_pyinstaller.log
+_build.log
+_keytool_err.txt
+_keytool_out.txt
+_w.py
+wm.py
+write_msg.py
+tmp.b64
+test123.txt
+test_write.txt
+screen.png
+
+# ---- Android: Gradle ----
+android/.gradle/
+android/local.properties
+android/build/
+android/app/build/
+android/app/release/
+android/captures/
+android/.idea/
+*.iml
+
+# ---- Android: signing (SENSITIVE) ----
+*.keystore
+*.jks
+keystore.properties
+
+# ---- IDE ----
+.idea/
+.vscode/
+*.swp
+
+# ---- OS ----
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ---- Claude / coverage ----
+.claude/
+.coverage
+htmlcov/
