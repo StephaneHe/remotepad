@@ -6,8 +6,9 @@ and per-IP lockout after repeated failures.
 
 from __future__ import annotations
 
+import hmac
 import logging
-import random
+import secrets
 import time
 
 from server.messages import AuthResponse
@@ -40,7 +41,10 @@ class AuthManager:
 
     @staticmethod
     def _generate_pin() -> str:
-        return str(random.randint(PIN_MIN, PIN_MAX))
+        # Use a CSPRNG: the PIN is an authentication secret, so it must not
+        # come from the predictable Mersenne-Twister `random` module.
+        span = PIN_MAX - PIN_MIN + 1
+        return str(PIN_MIN + secrets.randbelow(span))
 
     def get_pin(self) -> str:
         """Return the current PIN."""
@@ -78,9 +82,11 @@ class AuthManager:
             logger.warning("Client %s blocked (%ds remaining)", client_ip, remaining)
             return AuthResponse(success=False, message=msg)
 
-        if pin == self._pin:
-            # Success — reset failure counter
+        # Constant-time comparison to avoid leaking the PIN via timing.
+        if hmac.compare_digest(str(pin), self._pin):
+            # Success — reset failure counter and drop any lockout state
             self._failed_attempts.pop(client_ip, None)
+            self._lockout_until.pop(client_ip, None)
             logger.info("Auth OK from %s", client_ip)
             return AuthResponse(success=True, message="Authenticated")
 
