@@ -53,7 +53,17 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
-# ---- Claude / coverage ----
+# ---- Claude / internal working docs ----
 .claude/
+CLAUDE.md
+docs/CLEANUP_PLAN.md
+
+# ---- Coverage ----
 .coverage
 htmlcov/
+.pytest_cache/
+
+# ---- Runtime state / scratch ----
+config.json
+tmp.b64
+*.b64

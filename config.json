@@ -1,5 +1,0 @@
-{
-  "port": 9876,
-  "log_level": "INFO",
-  "auto_start": false
-}
