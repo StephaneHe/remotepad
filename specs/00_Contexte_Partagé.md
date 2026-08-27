@@ -82,12 +82,12 @@ Le développement est entièrement réalisé en ligne de commande, sans IDE. Cla
 ### 5.1 Serveur Python — Windows 11
 
 - **Python** : 3.12.10 (appelé via `py -3.12`)
-- **Venv** : `RemotePad\.venv`
-- **Exécuter Python** : `RemotePad\.venv\Scripts\python.exe`
-- **Installer un paquet** : `RemotePad\.venv\Scripts\pip.exe install <pkg>`
-- **Lancer les tests** : `RemotePad\.venv\Scripts\pytest.exe tests/ -v`
-- **Lancer avec couverture** : `RemotePad\.venv\Scripts\pytest.exe tests/ -v --cov=server`
-- **Lancer le serveur** : `RemotePad\.venv\Scripts\python.exe -m server`
+- **Venv** : `.venv` (à la racine du dépôt)
+- **Exécuter Python** : `.venv\Scripts\python.exe`
+- **Installer un paquet** : `.venv\Scripts\pip.exe install <pkg>`
+- **Lancer les tests** : `.venv\Scripts\pytest.exe tests/ -v`
+- **Lancer avec couverture** : `.venv\Scripts\pytest.exe tests/ -v --cov=server`
+- **Lancer le serveur** : `.venv\Scripts\python.exe -m server`
 - **Dépendances** : websockets, pynput, pystray, Pillow, pytest, pytest-asyncio, pytest-mock, pytest-cov
 
 > Note : on utilise les chemins absolus vers le venv plutôt que l'activation du venv, car les commandes sont exécutées via MCP dans des sessions PowerShell non interactives.
@@ -95,7 +95,7 @@ Le développement est entièrement réalisé en ligne de commande, sans IDE. Cla
 ### 5.2 Client Android — Gradle CLI
 
 - **JDK** : 17 (Temurin)
-- **Android SDK** : `%ANDROID_HOME%` (ANDROID_HOME)
+- **Android SDK** : `%ANDROID_HOME%`
 - **API level** : 34 / Build Tools 34.0.0
 - **Build debug APK** : `gradlew.bat assembleDebug`
 - **Tests unitaires** : `gradlew.bat testDebugUnitTest`
