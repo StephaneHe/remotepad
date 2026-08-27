@@ -4,13 +4,19 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!--
+      Bluetooth (RFCOMM) transport is a work in progress and disabled at
+      runtime. The BLUETOOTH_CONNECT / BLUETOOTH_SCAN permissions required on
+      Android 12+ are intentionally NOT declared yet; they will be added when
+      the BT path is completed. See ConnectionManager (bluetoothEnabled).
+    -->
 
     <application
         android:label="RemotePad"
         android:icon="@android:drawable/ic_menu_compass"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true">
+        android:networkSecurityConfig="@xml/network_security_config">
 
         <activity
             android:name=".MainActivity"

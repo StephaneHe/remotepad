@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RemotePad talks to a user-supplied PC over ws:// on the local network, so
+  cleartext traffic must be permitted. This is intentional and documented:
+  the app is meant to run on a trusted private network or over a VPN (see the
+  Security notice in the README). Cleartext is centralised here rather than
+  set globally via android:usesCleartextTraffic so it stays explicit and can
+  be tightened once TLS (wss://) is added.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

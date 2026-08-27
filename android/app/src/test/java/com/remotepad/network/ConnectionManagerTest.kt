@@ -41,11 +41,24 @@ class ConnectionManagerTest {
     // -- Fallback to BT ------------------------------------------------------
 
     @Test
-    fun `fallback to bt when wifi fails`() = runTest {
+    fun `fallback to bt when wifi fails and bt enabled`() = runTest {
+        // Bluetooth is a WIP feature, gated off by default: enable it explicitly.
+        val scope = kotlinx.coroutines.CoroutineScope(UnconfinedTestDispatcher())
+        val btManager = ConnectionManager(fakeWifi, fakeBt, scope, bluetoothEnabled = true)
+        btManager.configure("192.168.1.1", 9876, "AA:BB:CC:DD:EE:FF")
+        fakeWifi.shouldFail = true
+        btManager.connect("192.168.1.1", 9876)
+        assertEquals(ConnectionState.CONNECTED, btManager.connectionState.value)
+        assertEquals(fakeBt, btManager.getActiveTransport())
+    }
+
+    @Test
+    fun `bt fallback is skipped when disabled by default`() = runTest {
         fakeWifi.shouldFail = true
         manager.connect("192.168.1.1", 9876)
-        assertEquals(ConnectionState.CONNECTED, manager.connectionState.value)
-        assertEquals(fakeBt, manager.getActiveTransport())
+        // WIP Bluetooth must not be used: connection stays down instead of using BT.
+        assertEquals(ConnectionState.DISCONNECTED, manager.connectionState.value)
+        assertNull(manager.getActiveTransport())
     }
 
     // -- Both fail -----------------------------------------------------------
