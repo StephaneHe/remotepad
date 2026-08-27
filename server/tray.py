@@ -91,7 +91,9 @@ class TrayApp:
         port = self._config.port
         msg = f"PIN: {pin}\nIP: {ip}:{port}"
         icon.notify(msg, title="RemotePad")
-        logger.info("Tray started — PIN %s on %s:%d", pin, ip, port)
+        # Never log the PIN or the LAN IP: both are surfaced through the
+        # tray notification above, which is the only intended channel.
+        logger.info("Tray started on port %d", port)
 
     def _show_pin(self) -> None:
         pin = self._auth_manager.get_pin()

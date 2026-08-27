@@ -82,9 +82,10 @@ def main() -> None:
     )
     server_thread.start()
 
-    # Run tray in main thread (required by pystray on Windows)
+    # Run tray in main thread (required by pystray on Windows).
+    # The PIN is intentionally never logged: it is a live secret and is
+    # surfaced only through the tray notification / "Show PIN" menu.
     tray = TrayApp(server, auth, config, stop_event)
-    logger.info("PIN: %s", auth.get_pin())
     tray.run()
 
     # Tray exited — ensure server stops
