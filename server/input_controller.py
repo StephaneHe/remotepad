@@ -11,7 +11,7 @@ from pynput.keyboard import Key, KeyCode, Controller as PynputKeyboardController
 
 from server.messages import (
     Message, MouseMove, MouseClick, MouseDoubleClick, MouseScroll,
-    KeyPress, KeyCombo, TextInput,
+    KeyPress, KeyCombo, TextInput, Zoom,
 )
 
 # ---------------------------------------------------------------------------
@@ -135,6 +135,10 @@ class InputController:
     def _handle_text_input(self, msg: TextInput) -> None:
         self._keyboard.type(msg.text)
 
+    def _handle_zoom(self, msg: Zoom) -> None:
+        with self._keyboard.pressed(Key.ctrl):
+            self._mouse.scroll(0, msg.steps)
+
     # -- dispatch table -----------------------------------------------------
 
     _DISPATCH: dict[type, callable] = {
@@ -145,6 +149,7 @@ class InputController:
         KeyPress: _handle_key_press,
         KeyCombo: _handle_key_combo,
         TextInput: _handle_text_input,
+        Zoom: _handle_zoom,
     }
 
 

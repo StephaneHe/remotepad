@@ -13,6 +13,7 @@ import os
 import sys
 import threading
 
+from server import __version__
 from server.auth_manager import AuthManager
 from server.config import Config
 from server.input_controller import InputController
@@ -63,6 +64,7 @@ def main() -> None:
     log_level = getattr(logging, config.log_level.upper(), logging.INFO)
     setup_logging(log_file=os.path.abspath(log_path), level=log_level)
     logger = logging.getLogger("remotepad")
+    logger.info("RemotePad v%s starting", __version__)
 
     # Create components
     auth = AuthManager()

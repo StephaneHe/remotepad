@@ -11,6 +11,7 @@ sealed class RemoteEvent {
     data class KeyPress(val key: String, val modifiers: List<String>) : RemoteEvent()
     data class KeyCombo(val keys: List<String>) : RemoteEvent()
     data class TextInput(val text: String) : RemoteEvent()
+    data class Zoom(val steps: Int) : RemoteEvent()
     data class Auth(val pin: String) : RemoteEvent()
 }
 

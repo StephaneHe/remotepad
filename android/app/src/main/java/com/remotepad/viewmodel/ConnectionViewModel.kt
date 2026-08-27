@@ -69,6 +69,8 @@ class ConnectionViewModel(
                     // PIN rejected: clear field and stored value
                     pin.value = ""
                     prefs.putString(KEY_PIN, "")
+                    // Reset connection so the button re-enables for retry
+                    connection.disconnect()
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "ViewModel: connection error", e)
