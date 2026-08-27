@@ -49,6 +49,11 @@ object MessageSerializer {
             put("text", event.text)
         }.toString()
 
+        is RemoteEvent.Zoom -> JSONObject().apply {
+            put("type", "zoom")
+            put("steps", event.steps)
+        }.toString()
+
         is RemoteEvent.Auth -> JSONObject().apply {
             put("type", "auth")
             put("pin", event.pin)

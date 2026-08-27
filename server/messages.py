@@ -82,6 +82,11 @@ class TextInput(Message):
     text: str
 
 
+@dataclass
+class Zoom(Message):
+    steps: int
+
+
 # ---------------------------------------------------------------------------
 # Auth messages
 # ---------------------------------------------------------------------------
@@ -109,6 +114,7 @@ _TYPE_MAP: dict[str, type[Message]] = {
     "key_press": KeyPress,
     "key_combo": KeyCombo,
     "text_input": TextInput,
+    "zoom": Zoom,
     "auth": AuthRequest,
     "auth_response": AuthResponse,
 }

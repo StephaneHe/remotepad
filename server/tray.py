@@ -13,6 +13,7 @@ import threading
 import pystray
 from PIL import Image, ImageDraw
 
+from server import __version__
 from server.auth_manager import AuthManager
 from server.config import Config
 from server.log_manager import set_debug_mode
@@ -61,13 +62,15 @@ class TrayApp:
         self._icon = pystray.Icon(
             name="RemotePad",
             icon=_create_icon_image("green"),
-            title="RemotePad",
+            title=f"RemotePad v{__version__}",
             menu=self._create_menu(),
         )
         self._icon.run(setup=self._on_setup)
 
     def _create_menu(self) -> pystray.Menu:
         return pystray.Menu(
+            pystray.MenuItem(f"RemotePad v{__version__}", None, enabled=False),
+            pystray.Menu.SEPARATOR,
             pystray.MenuItem("Show PIN", self._show_pin),
             pystray.MenuItem(
                 "Debug mode",

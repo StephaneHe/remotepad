@@ -50,6 +50,7 @@ class TouchEventProcessor(
         const val LONG_PRESS_MIN_MS = 500L
         const val THROTTLE_INTERVAL_MS = 16L
         const val VOLUME_STEP_PX = 40f
+        const val ZOOM_STEP_PX = 30f
     }
 
     // Tracking state
@@ -69,6 +70,10 @@ class TouchEventProcessor(
 
     // Two-finger volume accumulator
     private var volumeAccumulator: Float = 0f
+
+    // Pinch zoom accumulator
+    private var pinchAccumulator: Float = 0f
+    private var lastSpan: Float = -1f
 
     /**
      * Feed a touch input into the processor.
@@ -121,6 +126,8 @@ class TouchEventProcessor(
         pendingScrollDx = 0f
         pendingScrollDy = 0f
         volumeAccumulator = 0f
+        pinchAccumulator = 0f
+        lastSpan = -1f
     }
 
     private fun handlePointerDown(input: TouchInput) {
@@ -149,13 +156,35 @@ class TouchEventProcessor(
             pendingDx += dx
             pendingDy += dy
             throttleEmitMove(input.timestampMs)
-        } else if (fingerCount >= 2) {
-            // Two-finger vertical drag → volume control
+        } else if (fingerCount >= 2 && lastPointers.size >= 2) {
             moved = true
-            val prev = lastPointers[0]
-            val curr = input.pointers[0]
-            val dy = curr.y - prev.y
+            val p0prev = lastPointers[0]
+            val p1prev = lastPointers[1]
+            val p0curr = input.pointers[0]
+            val p1curr = input.pointers[1]
 
+            // Pinch zoom: track span change between the two fingers
+            val currSpan = distance(p0curr, p1curr)
+            if (lastSpan >= 0f) {
+                val dSpan = currSpan - lastSpan
+                pinchAccumulator += dSpan
+                // Spread → zoom in
+                while (pinchAccumulator >= ZOOM_STEP_PX) {
+                    emitter(RemoteEvent.Zoom(1))
+                    pinchAccumulator -= ZOOM_STEP_PX
+                }
+                // Squeeze → zoom out
+                while (pinchAccumulator <= -ZOOM_STEP_PX) {
+                    emitter(RemoteEvent.Zoom(-1))
+                    pinchAccumulator += ZOOM_STEP_PX
+                }
+            }
+            lastSpan = currSpan
+
+            // Volume: vertical translation of centroid
+            val centroidPrevY = (p0prev.y + p1prev.y) / 2f
+            val centroidCurrY = (p0curr.y + p1curr.y) / 2f
+            val dy = centroidCurrY - centroidPrevY
             volumeAccumulator += dy
             // Swipe UP (negative dy) → volume UP
             while (volumeAccumulator <= -VOLUME_STEP_PX) {
