@@ -178,3 +178,36 @@ class TestAllMessageTypes:
         for raw in test_cases:
             msg = parse_message(raw)
             assert isinstance(msg, Message), f"Failed for: {raw}"
+
+
+class TestInboundValidation:
+    def test_oversized_text_rejected(self):
+        raw = '{"type": "text_input", "text": "%s"}' % ("A" * 5000)
+        with pytest.raises(ValueError):
+            parse_message(raw)
+
+    def test_non_numeric_move_rejected(self):
+        with pytest.raises(ValueError):
+            parse_message('{"type": "mouse_move", "dx": "x", "dy": 0}')
+
+    def test_out_of_range_move_rejected(self):
+        with pytest.raises(ValueError):
+            parse_message('{"type": "mouse_move", "dx": 1e12, "dy": 0}')
+
+    def test_too_many_keys_rejected(self):
+        keys = ",".join(['"a"'] * 50)
+        with pytest.raises(ValueError):
+            parse_message('{"type": "key_combo", "keys": [%s]}' % keys)
+
+    def test_zoom_out_of_range_rejected(self):
+        with pytest.raises(ValueError):
+            parse_message('{"type": "zoom", "steps": 999999}')
+
+    def test_auth_response_not_accepted_inbound(self):
+        """AuthResponse is server->client only and must be rejected as input."""
+        with pytest.raises(ValueError):
+            parse_message('{"type": "auth_response", "success": true, "message": "x"}')
+
+    def test_auth_response_still_serializable(self):
+        out = serialize_message(AuthResponse(success=True, message="ok"))
+        assert '"type":"auth_response"' in out

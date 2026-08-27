@@ -22,16 +22,54 @@ class Message:
 
 
 # ---------------------------------------------------------------------------
-# Mouse messages
+# Validation bounds
 # ---------------------------------------------------------------------------
 
 VALID_BUTTONS = ("left", "right", "middle")
 
+# A single pointer delta / scroll amount is a small screen-space value.
+COORD_LIMIT = 100_000.0
+# Ctrl+scroll zoom is applied in small steps.
+ZOOM_LIMIT = 1_000
+# Longest text chunk accepted in one text_input message.
+MAX_TEXT_LEN = 4_096
+# A key name like "page_down" or a single char; bound to reject junk.
+MAX_KEY_NAME_LEN = 32
+# No legitimate combo/modifier set is longer than this.
+MAX_KEYS = 16
+
+
+def _check_number(value, name: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be a number, got {type(value).__name__}")
+    if value != value or abs(value) > COORD_LIMIT:  # NaN or out of range
+        raise ValueError(f"{name} out of range: {value}")
+    return value
+
+
+def _check_key_list(values, name: str) -> list[str]:
+    if not isinstance(values, list):
+        raise ValueError(f"{name} must be a list")
+    if len(values) > MAX_KEYS:
+        raise ValueError(f"{name} has too many entries ({len(values)})")
+    for v in values:
+        if not isinstance(v, str) or not (0 < len(v) <= MAX_KEY_NAME_LEN):
+            raise ValueError(f"{name} contains an invalid key name")
+    return values
+
+
+# ---------------------------------------------------------------------------
+# Mouse messages
+# ---------------------------------------------------------------------------
 
 @dataclass
 class MouseMove(Message):
     dx: float
     dy: float
+
+    def __post_init__(self) -> None:
+        _check_number(self.dx, "dx")
+        _check_number(self.dy, "dy")
 
 
 @dataclass
@@ -61,6 +99,10 @@ class MouseScroll(Message):
     dx: float
     dy: float
 
+    def __post_init__(self) -> None:
+        _check_number(self.dx, "dx")
+        _check_number(self.dy, "dy")
+
 
 # ---------------------------------------------------------------------------
 # Keyboard messages
@@ -71,20 +113,42 @@ class KeyPress(Message):
     key: str
     modifiers: list[str]
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.key, str) or not (0 < len(self.key) <= MAX_KEY_NAME_LEN):
+            raise ValueError("Invalid key name")
+        _check_key_list(self.modifiers, "modifiers")
+
 
 @dataclass
 class KeyCombo(Message):
     keys: list[str]
+
+    def __post_init__(self) -> None:
+        _check_key_list(self.keys, "keys")
+        if not self.keys:
+            raise ValueError("keys must not be empty")
 
 
 @dataclass
 class TextInput(Message):
     text: str
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.text, str):
+            raise ValueError("text must be a string")
+        if len(self.text) > MAX_TEXT_LEN:
+            raise ValueError(f"text too long ({len(self.text)} > {MAX_TEXT_LEN})")
+
 
 @dataclass
 class Zoom(Message):
     steps: int
+
+    def __post_init__(self) -> None:
+        if isinstance(self.steps, bool) or not isinstance(self.steps, int):
+            raise ValueError("steps must be an integer")
+        if abs(self.steps) > ZOOM_LIMIT:
+            raise ValueError(f"steps out of range: {self.steps}")
 
 
 # ---------------------------------------------------------------------------
@@ -106,6 +170,8 @@ class AuthResponse(Message):
 # Registry: JSON type string <-> dataclass
 # ---------------------------------------------------------------------------
 
+# Types a client is allowed to send to the server (inbound). AuthResponse is
+# deliberately excluded: it is a server->client message only.
 _TYPE_MAP: dict[str, type[Message]] = {
     "mouse_move": MouseMove,
     "mouse_click": MouseClick,
@@ -116,10 +182,12 @@ _TYPE_MAP: dict[str, type[Message]] = {
     "text_input": TextInput,
     "zoom": Zoom,
     "auth": AuthRequest,
-    "auth_response": AuthResponse,
 }
 
+# Serialization registry: every message class the server may emit, including
+# outbound-only ones like AuthResponse.
 _CLASS_TO_TYPE: dict[type[Message], str] = {v: k for k, v in _TYPE_MAP.items()}
+_CLASS_TO_TYPE[AuthResponse] = "auth_response"
 
 
 # ---------------------------------------------------------------------------
