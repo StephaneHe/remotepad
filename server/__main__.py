@@ -69,7 +69,14 @@ def main() -> None:
     # Create components
     auth = AuthManager()
     controller = InputController()
-    server = RemotePadServer("0.0.0.0", config.port, auth, controller)
+    server = RemotePadServer(config.host, config.port, auth, controller)
+    if config.host not in ("127.0.0.1", "localhost"):
+        logger.warning(
+            "Server binds to %s: reachable beyond this machine. RemotePad "
+            "grants full mouse/keyboard control — run it only on a trusted "
+            "private network or VPN.",
+            config.host,
+        )
 
     # Shared stop event
     stop_event = threading.Event()

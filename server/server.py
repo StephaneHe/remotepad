@@ -24,6 +24,10 @@ from server.screen_capture import capture_cursor_region
 
 logger = logging.getLogger("remotepad.server")
 
+# Maximum accepted size for a single inbound WebSocket message (64 KiB).
+# Legitimate control/auth/text messages are well under this.
+MAX_MESSAGE_BYTES = 64 * 1024
+
 
 class RemotePadServer:
     """WebSocket server that authenticates clients and dispatches input."""
@@ -56,6 +60,10 @@ class RemotePadServer:
             self._handle_client,
             self.host,
             self._requested_port,
+            # Bound inbound frame size to prevent a malicious/buggy client
+            # from exhausting memory with an oversized message (e.g. a huge
+            # text_input payload).
+            max_size=MAX_MESSAGE_BYTES,
         )
         # Resolve actual port (useful when port=0)
         sockets = self._server.sockets

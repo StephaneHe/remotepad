@@ -66,6 +66,31 @@ class TestConfigSave:
         assert data["port"] == 7777
 
 
+class TestConfigHost:
+    def test_host_default(self, config):
+        config.load()
+        assert config.host == "0.0.0.0"
+
+    def test_host_loaded_and_saved(self, config, config_path):
+        with open(config_path, "w", encoding="utf-8") as f:
+            json.dump({"host": "127.0.0.1", "port": 9876}, f)
+        config.load()
+        assert config.host == "127.0.0.1"
+
+    def test_invalid_port_in_file_falls_back(self, config, config_path):
+        """An out-of-range port in the file must not bypass validation."""
+        with open(config_path, "w", encoding="utf-8") as f:
+            json.dump({"port": 99999}, f)
+        config.load()
+        assert config.port == 9876  # fell back to default, not 99999
+
+    def test_non_numeric_port_in_file_falls_back(self, config, config_path):
+        with open(config_path, "w", encoding="utf-8") as f:
+            json.dump({"port": "abc"}, f)
+        config.load()
+        assert config.port == 9876
+
+
 class TestConfigValidation:
     def test_config_invalid_port_low(self, config):
         config.load()
