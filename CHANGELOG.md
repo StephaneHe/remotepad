@@ -7,6 +7,30 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-27
+
+Passe de durcissement sécurité et de nettoyage en vue d'une publication.
+
+### Security
+- **Server** : le PIN d'authentification est généré avec un CSPRNG (`secrets`) au lieu de `random`, et vérifié en temps constant (`hmac.compare_digest`).
+- **Server** : le PIN et l'IP LAN ne sont plus jamais écrits dans `remotepad.log`.
+- **Server** : les messages WebSocket entrants sont bornés en taille (64 Kio, `max_size`) et tous leurs champs sont validés/bornés ; `auth_response` n'est plus accepté en entrée (message serveur → client uniquement).
+- **Server** : l'hôte de bind est configurable via `config.json` (défaut `0.0.0.0` inchangé), avec un avertissement au démarrage lorsqu'il n'est pas loopback.
+- **Android** : `allowBackup="false"` (les préférences ne partent plus dans la sauvegarde cloud) ; le cleartext est déplacé dans un `network_security_config.xml` documenté.
+
+### Fixed
+- **Server** : `Config.load()` applique désormais les valeurs via les setters de validation ; un port hors plage ou non numérique retombe sur le défaut au lieu de contourner la validation.
+
+### Changed
+- **Android** : le transport Bluetooth (work in progress) est désactivé par défaut (`ConnectionManager(bluetoothEnabled = false)`) et n'est plus proposé en fallback tant que les permissions Android 12+ ne sont pas gérées.
+
+### Added
+- `README.md` (anglais) décrivant l'app, l'installation, les tests, une *Security notice* et le statut WIP du Bluetooth.
+- `LICENSE` (MIT), `requirements.txt` et `requirements-dev.txt` (versions épinglées), `config.example.json`.
+
+### Removed
+- Fichiers de scratch (`tools/`, `tests/_b64.txt`) retirés du dépôt ; `config.json` (état runtime) n'est plus versionné.
+
 ## [1.1.1] - 2026-08-02
 
 ### Fixed
