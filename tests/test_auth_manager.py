@@ -37,6 +37,25 @@ class TestGeneratePin:
             assert len(p) == 4 and p.isdigit()
 
 
+class TestPinIsCryptographic:
+    def test_generate_pin_uses_csprng(self):
+        """PIN generation must go through secrets.randbelow, not random."""
+        with patch("server.auth_manager.secrets.randbelow", return_value=234) as mock:
+            pin = AuthManager().get_pin()
+        mock.assert_called()
+        assert pin == "1234"  # PIN_MIN (1000) + 234
+
+    def test_verify_uses_constant_time_compare(self, manager):
+        """Verification must use hmac.compare_digest, not ==."""
+        pin = manager.get_pin()
+        with patch(
+            "server.auth_manager.hmac.compare_digest", return_value=True
+        ) as mock:
+            result = manager.verify(pin, "192.168.1.99")
+        mock.assert_called_once()
+        assert result.success is True
+
+
 class TestAuthSuccess:
     def test_auth_success(self, manager):
         pin = manager.get_pin()
