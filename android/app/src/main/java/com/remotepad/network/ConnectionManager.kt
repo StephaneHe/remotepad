@@ -15,11 +15,18 @@ import kotlinx.coroutines.launch
  *
  * Priority: WiFi first, Bluetooth as fallback.
  * Exposes a unified [ConnectionState] reflecting the active transport.
+ *
+ * NOTE: the Bluetooth transport is a **work in progress** and is disabled by
+ * default ([bluetoothEnabled] = false). The runtime permissions required on
+ * Android 12+ (BLUETOOTH_CONNECT/SCAN) are not yet requested, so the BT paths
+ * would fail. The code and tests are kept for the eventual completion of the
+ * feature, but production wiring uses WiFi only. Do not enable in a release.
  */
 class ConnectionManager(
     private val wifiClient: RemoteConnection,
     private val btClient: RemoteConnection,
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    private val bluetoothEnabled: Boolean = false
 ) : RemoteConnection {
 
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
@@ -60,8 +67,8 @@ class ConnectionManager(
             return
         } catch (_: Exception) { }
 
-        // Fallback to Bluetooth
-        if (btAddress.isNotEmpty()) {
+        // Fallback to Bluetooth (WIP: disabled unless explicitly enabled)
+        if (bluetoothEnabled && btAddress.isNotEmpty()) {
             try {
                 btClient.connect(btAddress, 0)
                 activeConnection = btClient
@@ -117,7 +124,7 @@ class ConnectionManager(
      * Switch from current transport to Bluetooth.
      */
     suspend fun switchToBluetooth() {
-        if (btAddress.isEmpty()) return
+        if (!bluetoothEnabled || btAddress.isEmpty()) return
         try {
             btClient.connect(btAddress, 0)
             val oldConnection = activeConnection
@@ -161,8 +168,8 @@ class ConnectionManager(
     private suspend fun attemptFailover() {
         _connectionState.value = ConnectionState.CONNECTING
 
-        // If WiFi was active, try BT
-        if (activeConnection == wifiClient && btAddress.isNotEmpty()) {
+        // If WiFi was active, try BT (WIP: disabled unless explicitly enabled)
+        if (bluetoothEnabled && activeConnection == wifiClient && btAddress.isNotEmpty()) {
             try {
                 btClient.connect(btAddress, 0)
                 activeConnection = btClient
