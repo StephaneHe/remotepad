@@ -11,17 +11,25 @@ android {
         applicationId = "com.remotepad"
         minSdk = 26
         targetSdk = 33
-        versionCode = 4
-        versionName = "1.2.0"
+        versionCode = 5
+        versionName = "1.2.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // The release keystore is gitignored, so it is present on the maintainer's
+    // machine but not in a fresh clone / CI. Guard on its presence so the build
+    // still works everywhere.
+    val releaseKeystore = file("../remotepad-release.keystore")
+    val hasReleaseKeystore = releaseKeystore.exists()
+
     signingConfigs {
-        create("release") {
-            storeFile = file("../remotepad-release.keystore")
-            storePassword = "remotepad123"
-            keyAlias = "remotepad"
-            keyPassword = "remotepad123"
+        if (hasReleaseKeystore) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = "remotepad123"
+                keyAlias = "remotepad"
+                keyPassword = "remotepad123"
+            }
         }
     }
 
@@ -29,7 +37,22 @@ android {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("release")
+            // Fall back to the debug key if the release keystore is absent.
+            signingConfig = if (hasReleaseKeystore)
+                signingConfigs.getByName("release")
+            else
+                signingConfigs.getByName("debug")
+        }
+        debug {
+            // Sign debug builds with the SAME release key (when available) so the
+            // debug and release variants share one signature and can replace each
+            // other on-device. Without this, installing one over the other fails
+            // with INSTALL_FAILED_UPDATE_INCOMPATIBLE (same applicationId, two
+            // different signing certificates). Falls back to the default debug
+            // keystore on machines without the release keystore.
+            if (hasReleaseKeystore) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

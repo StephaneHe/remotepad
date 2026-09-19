@@ -7,6 +7,11 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-09-19
+
+### Fixed
+- **Android** : correction de l'échec d'installation `INSTALL_FAILED_UPDATE_INCOMPATIBLE` (« conflit avec un package existant »). Les variantes `debug` et `release` étaient signées avec deux clés différentes (clé de debug par défaut vs `remotepad-release.keystore`), pour un même `applicationId` `com.remotepad` : installer l'une par-dessus l'autre était refusé par Android. La variante `debug` est désormais signée avec la **même clé release** (quand le keystore est présent ; repli sur la clé de debug par défaut sinon, pour les clones sans keystore). Les deux variantes partagent donc une signature unique et sont mutuellement remplaçables. `versionCode` 4 → 5.
+
 ## [1.2.0] - 2026-08-27
 
 Passe de durcissement sécurité et de nettoyage en vue d'une publication.
