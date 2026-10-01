@@ -7,6 +7,13 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-10-01
+
+### Changed
+- `README.md` réécrit au format projet professionnel : badges, statut, configuration (`config.json`, `keystore.properties`), architecture et arborescence, tests, build (PyInstaller / APK), versionnage, feuille de route, sécurité, contribution, auteur.
+- **Server** : `__version__` 1.2.0 → 1.2.3 (réalignement sur la version du changelog).
+- **Android** : `versionName` 1.2.3, `versionCode` 6 → 7.
+
 ## [1.2.2] - 2026-10-01
 
 ### Security
