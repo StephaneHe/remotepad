@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -11,24 +13,29 @@ android {
         applicationId = "com.remotepad"
         minSdk = 26
         targetSdk = 33
-        versionCode = 5
-        versionName = "1.2.1"
+        versionCode = 6
+        versionName = "1.2.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // The release keystore is gitignored, so it is present on the maintainer's
-    // machine but not in a fresh clone / CI. Guard on its presence so the build
-    // still works everywhere.
-    val releaseKeystore = file("../remotepad-release.keystore")
-    val hasReleaseKeystore = releaseKeystore.exists()
+    // Signing credentials live in android/keystore.properties (gitignored, see
+    // keystore.properties.example) next to the gitignored keystore. Both are
+    // present on the maintainer's machine but not in a fresh clone / CI, so the
+    // build falls back to the default debug key when they are missing.
+    val keystoreProps = Properties().apply {
+        val f = rootProject.file("keystore.properties")
+        if (f.exists()) f.inputStream().use { load(it) }
+    }
+    val releaseKeystore = keystoreProps.getProperty("storeFile")?.let { rootProject.file(it) }
+    val hasReleaseKeystore = releaseKeystore?.exists() == true
 
     signingConfigs {
         if (hasReleaseKeystore) {
             create("release") {
                 storeFile = releaseKeystore
-                storePassword = "***REMOVED***"
-                keyAlias = "remotepad"
-                keyPassword = "***REMOVED***"
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
             }
         }
     }

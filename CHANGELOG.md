@@ -7,6 +7,12 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-10-01
+
+### Security
+- **Android** : les identifiants de signature ne sont plus écrits en dur dans `build.gradle.kts` ; ils sont lus depuis `android/keystore.properties` (non versionné, modèle `keystore.properties.example`). Le mot de passe du keystore a été changé (le certificat de signature est inchangé : les mises à jour restent installables). `versionCode` 5 → 6.
+- Historique Git réécrit pour retirer l'ancien mot de passe, des chemins machine et l'adresse e-mail personnelle des métadonnées de commit.
+
 ## [1.2.1] - 2026-09-19
 
 ### Fixed

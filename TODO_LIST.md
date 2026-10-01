@@ -13,5 +13,5 @@
 - [ ] **Désinstaller l'ancienne app RemotePad du téléphone une dernière fois** (`adb uninstall com.remotepad`, ou Réglages → Applis → RemotePad → Désinstaller), puis installer le nouvel APK. Nécessaire car l'app déjà installée est signée avec une clé différente ; après ce reset, les mises à jour futures (debug ou release) partageront la même clé et s'installeront sans conflit.
 
 ### Suivi / dette (hors périmètre de ce fix)
-- [ ] Mots de passe du keystore en clair dans `build.gradle.kts` (dépôt public). Inoffensif tant que le `.keystore` reste gitignoré, mais à externaliser (ex. `keystore.properties` / variables d'env / `~/.gradle/gradle.properties`) pour la propreté portfolio.
+- [x] Mots de passe du keystore externalisés dans `android/keystore.properties` (gitignoré), mot de passe changé, historique purgé (2026-10-01, v1.2.2).
 - [ ] Aucun device Android connecté pendant ce fix : `adb install` non vérifié en réel. Cohérence de signature prouvée via `apksigner verify --print-certs`.
